@@ -1,3 +1,16 @@
+/*
+--------------------------------------------------------
+by: Rogério Chaves (AKA CandyCrayon), 2021
+//    __                       __                       
+//   /  )             /       /  )                      
+//  /   __.  ____  __/ __  , /   __  __.  __  , __ ____ 
+// (__/(_/|_/ / <_(_/_/ (_/_(__// (_(_/|_/ (_/_(_)/ / <_
+//                       /                  /           
+//                      '                  '            
+--------------------------------------------------------
+*/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -23,12 +36,12 @@ int swithPositions(BufferMinHeap *buff, int pos1, int pos2)
     return 1;
 }
 
-//promotes the best element (child of the "position")
+//promotes the best element recursivelly (child of the "position")
 void promoteNode(BufferMinHeap *buff, int position)
 {
     //get the 2 possible nodes for this position:
-    BinHeap *leftOption = buff->data[position*2];
-    BinHeap *rightOption = buff->data[position*2+1];
+    //BinHeap *leftOption = buff->data[position*2];
+    //BinHeap *rightOption = buff->data[position*2+1];
 
     if(buff->data[position*2] == NULL || buff->data[position*2+1])
     {
@@ -94,6 +107,35 @@ void promoteNode(BufferMinHeap *buff, int position)
     
 }
 
+//checks if parent is bigger than the current node recursivelly and changes it
+void demoteNode(BufferMinHeap *buff, int position)
+{
+    //this is root, nothing to check here
+    if(position == 1)
+        return;
+
+    int parentPos = 0;
+
+    if(position%2)
+        parentPos = (position-1)/2;
+    else
+        parentPos = position/2;
+
+
+    if(buff->data[parentPos]->prio < buff->data[position]->prio)
+        return;
+
+    if(buff->data[parentPos]->prio == buff->data[position]->prio)
+        if(buff->data[parentPos]->timeStamp > buff->data[position]->timeStamp)
+            swithPositions(buff, parentPos, position);
+
+    if(buff->data[parentPos]->prio > buff->data[position]->prio)
+        swithPositions(buff, parentPos, position);
+
+    demoteNode(buff, parentPos);
+    return;
+}
+
 
 BinHeap *pop(BufferMinHeap *buff)
 {
@@ -104,16 +146,45 @@ BinHeap *pop(BufferMinHeap *buff)
     return popNode;
 }
 
-BinHeap *push(BufferMinHeap *buff)
+BinHeap *push(BufferMinHeap *buff, BinHeap *info)
 {
+    //start from position 1
+    int positionToInsert = 1;
 
+    //see where we can insert this
+    while(buff->data[positionToInsert] == NULL)
+        positionToInsert++;
+
+    //found it
+    buff->data[positionToInsert] = info;
+    demoteNode(buff, positionToInsert);
+    return info;
 }
 
+BinHeap *createNode(int priority, int timeStamp)
+{
+    BinHeap *new = (BinHeap *)malloc(sizeof(BinHeap));
+    new->prio = priority;
+    new->timeStamp = timeStamp;
 
+    return new;
+}
+//simple print
 void printThisAsTree(BufferMinHeap *buff, int parentNodePos)
 {
-    
-}
+    if(buff->data[parentNodePos] == NULL)
+        return;
+
+    printf("\tn%p [label = (%d, %d)\"\"]\n", buff->data[parentNodePos], buff->data[parentNodePos]->prio, buff->data[parentNodePos]->timeStamp);
+
+    if(buff->data[parentNodePos*2] != NULL)
+        printf("\tn%p -- n%p\n", buff->data[parentNodePos], buff->data[parentNodePos*2]);
+    if(buff->data[parentNodePos*2+1] != NULL)
+        printf("\tn%p -- n%p\n", buff->data[parentNodePos], buff->data[parentNodePos*2+1]);
+
+    printThisAsTree(buff, parentNodePos*2);
+    printThisAsTree(buff, parentNodePos*2+1);
+} 
 
 int main()
 {
@@ -121,6 +192,21 @@ int main()
 
     buffer->indexOfLastFilled = 0; //no elements in the buffer
 
+    BinHeap *prio1 = createNode(0, 3);
+    BinHeap *prio2 = createNode(2, 3);
+    BinHeap *prio3 = createNode(6, 5);
+    BinHeap *prio4 = createNode(1, 3);
+    BinHeap *prio5 = createNode(7, 3);
+    BinHeap *prio6 = createNode(0, 2);
 
+    push(buffer, prio1);
+    push(buffer, prio2);
+    push(buffer, prio3);
+    push(buffer, prio4);
+    push(buffer, prio5);
+    push(buffer, prio6);
 
+    printThisAsTree(buffer, 1);
+
+    return 0;
 }
