@@ -1,7 +1,7 @@
 #ifndef __PRIORITYQUEUES_H__
 #define __PRIORITYQUEUES_H__
 
-#define MAXPRIOS 64
+#define MAXPRIOS 32
 
 
 typedef struct st_binHeap
