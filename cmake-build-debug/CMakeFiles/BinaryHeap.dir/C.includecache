@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/11085218/Documents/GitHub/BinaryHeap/priorityQueues.c
+stdio.h
+-
+stdlib.h
+-
+priorityQueues.h
+C:/Users/11085218/Documents/GitHub/BinaryHeap/priorityQueues.h
+
+C:/Users/11085218/Documents/GitHub/BinaryHeap/priorityQueues.h
+
