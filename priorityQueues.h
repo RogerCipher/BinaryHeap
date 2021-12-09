@@ -3,6 +3,7 @@
 
 #define MAXPRIOS 32
 
+/*---data structures---*/
 
 typedef struct st_binHeap
 {
@@ -17,5 +18,28 @@ typedef struct st_bufferMinHeap
     int indexOfLastFilled;
 }BufferMinHeap;
 
+/*---low level operations on the heap---*/
+
+int shouldSwitchNodes(BufferMinHeap *buff,int pos1,int pos2);
+int swithPositions(BufferMinHeap *buff, int pos1, int pos2);
+void promoteNode(BufferMinHeap *buff, int position);
+void demoteNode(BufferMinHeap *buff, int position);
+
+/*---high level operations on the heap---*/
+
+BinHeap *top(BufferMinHeap *buff);
+BinHeap *pop(BufferMinHeap *buff);
+BinHeap *push(BufferMinHeap *buff, BinHeap *info);
+
+/*---element creators---*/
+
+BinHeap *createNode(int priority, int timeStamp);
+BufferMinHeap *createHeap();
+
+/*---stuff for printing---*/
+
+void printThisAsTree(BufferMinHeap *buff, int parentNodePos);
+void printTree(BufferMinHeap *buff);
+void printAsBuffer(BufferMinHeap *buff);
 
 #endif

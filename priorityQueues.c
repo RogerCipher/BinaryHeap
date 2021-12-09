@@ -9,8 +9,6 @@ by: Rogério Chaves (AKA CandyCrayon), 2021
 //                      '                  '            
 --------------------------------------------------------
 */
-
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -23,11 +21,18 @@ BufferMinHeap *createHeap()
     buffer->indexOfLastFilled = 0; //no elements in the buffer
 
     for(int i = 0; i < MAXPRIOS; i++)
-        buffer->data[i] = NULL;
+        buffer->data[i] = NULL; //initialization of the buffer
 
     return buffer;
 }
 
+//returns 1 if pos1 is bigger(in case of minHeap) than pos2
+int shouldSwitchNodes(BufferMinHeap *buff,int pos1,int pos2)
+{
+    if((buff->data[pos1]->prio > buff->data[pos2]->prio) || (buff->data[pos1]->prio == buff->data[pos2]->prio && buff->data[pos1]->timeStamp > buff->data[pos2]->timeStamp))
+        return 1;
+    return 0;
+}
 
 BinHeap *top(BufferMinHeap *buff)
 {
@@ -57,81 +62,51 @@ int swithPositions(BufferMinHeap *buff, int pos1, int pos2)
     return 1;
 }
 
-//promotes the best element recursivelly (child of the "position")
+//checks if parent is bugger than children and changes it recursivelly down the tree
 void promoteNode(BufferMinHeap *buff, int position)
 {
-    //get the 2 possible nodes for this position:
-    BinHeap *leftOption = buff->data[position*2];
-    BinHeap *rightOption = buff->data[position*2+1];
-
-    if(leftOption == NULL && rightOption == NULL)
-    {
-        //leaf node, we simply delete the current position
-        free(buff->data[position]);
-        buff->data[position] = NULL;
+    //check if it has children:
+    if(position*2 > buff->indexOfLastFilled)
         return;
-    }
 
-    if(leftOption == NULL || rightOption == NULL)
+    //check if it only has 1 child:
+    if(position*2 == buff->indexOfLastFilled)
     {
-        //only one option
-        if(leftOption == NULL)
-        {
-            //promote right
-            swithPositions(buff, position*2+1, position);
-            promoteNode(buff, position*2+1);
-        }
-            
-        else
-        {
-            //promote left
-            swithPositions(buff, position*2, position);
-            promoteNode(buff, position*2);
-        }
-            
+        if(shouldSwitchNodes(buff, position, position*2))
+            swithPositions(buff, position, position*2);
 
         return;
     }
 
-    //both options are possible:
-    if(leftOption->prio == rightOption->prio)
-    {
-        //prios are the same, check time stamps
-        if(leftOption->timeStamp > rightOption->timeStamp)
-        {
-            //promote right
-            swithPositions(buff, position*2+1, position);
-            promoteNode(buff, position*2+1);
-        }
-        else
-        {
-            //promote left
-            swithPositions(buff, position*2, position);
-            promoteNode(buff, position*2);         
-        }
-    }
-    else
-    {
-        //best prio wins
-        if(leftOption->prio > rightOption->prio)
-        {
-            //promote right
-            swithPositions(buff, position*2+1, position);
-            promoteNode(buff, position*2+1);
-        }
-        else
-        {
-            //promote left
-            swithPositions(buff, position*2, position);
-            promoteNode(buff, position*2);         
-        }
-    }
+    //if it has 2 children:
+    int leftChildPosition = position*2;
+    int rightChildPosition = position*2+1;
 
+    //best child will be 1 if rightChild is bigger than leftChild
+    int bestChild = shouldSwitchNodes(buff, rightChildPosition, leftChildPosition);
+
+    //if left child is better:
+    if(bestChild)
+        if(shouldSwitchNodes(buff, position, leftChildPosition))
+        {
+            swithPositions(buff, position, leftChildPosition);
+            promoteNode(buff, leftChildPosition);
+            return;
+        }
+    //if right child is better:
+    if(shouldSwitchNodes(buff, position, rightChildPosition))
+    {
+        swithPositions(buff, position, rightChildPosition);
+        promoteNode(buff, rightChildPosition);
+        return;
+    }
+    
+    //otherwise there's nothing to do, we are good here
     return;
 
 }
 
-//checks if parent is bigger than the current node recursivelly and changes it
+//checks if parent is bugger than children and changes it recursivelly up the tree
 void demoteNode(BufferMinHeap *buff, int position)
 {
     //this is root, nothing to check here
@@ -145,26 +120,47 @@ void demoteNode(BufferMinHeap *buff, int position)
     else
         parentPos = position/2;
 
-
-    if(buff->data[parentPos]->prio < buff->data[position]->prio)
-        return;
-
-    if(buff->data[parentPos]->prio == buff->data[position]->prio)
-        if(buff->data[parentPos]->timeStamp > buff->data[position]->timeStamp)
-            swithPositions(buff, parentPos, position);
-
-    if(buff->data[parentPos]->prio > buff->data[position]->prio)
+        
+    if(shouldSwitchNodes(buff, parentPos, position))
+    {
         swithPositions(buff, parentPos, position);
-
-    demoteNode(buff, parentPos);
+        demoteNode(buff, parentPos);
+        return;
+    }
     return;
 }
 
 
 BinHeap *pop(BufferMinHeap *buff)
 {
+    //check if the queue is empty
+    if(buff->indexOfLastFilled == 0)
+        return NULL;
+
+
     //first lets get the thing we want to pop
-    BinHeap *popNode = buff->data[1];
+    BinHeap *popNode = (BinHeap *)malloc(sizeof(BinHeap));
+
+    popNode->prio = buff->data[1]->prio;
+    popNode->timeStamp = buff->data[1]->timeStamp;
+
+    //check if the queue only has one node:
+    if(buff->indexOfLastFilled == 1)
+    {
+        free(buff->data[1]);
+        buff->data[1] = NULL;
+
+        buff->indexOfLastFilled = 0;
+        return popNode;
+    }    
+    
+    
+    //for every other case:
+    swithPositions(buff, 1, buff->indexOfLastFilled);
+    free(buff->data[buff->indexOfLastFilled]);
+    buff->data[buff->indexOfLastFilled] = NULL;
+    buff->indexOfLastFilled--;
+    
     promoteNode(buff, 1);
 
     return popNode;
@@ -172,12 +168,8 @@ BinHeap *pop(BufferMinHeap *buff)
 
 BinHeap *push(BufferMinHeap *buff, BinHeap *info)
 {
-    //start from position 1
-    int positionToInsert = 1;
-
-    //see where we can insert this
-    while(buff->data[positionToInsert] != NULL)
-        positionToInsert++;
+    int positionToInsert = buff->indexOfLastFilled +1;
+    buff->indexOfLastFilled++;
 
     printf("putting it in the position %d\n", positionToInsert);
     //found it
@@ -194,6 +186,7 @@ BinHeap *createNode(int priority, int timeStamp)
 
     return new;
 }
+
 //simple print
 void printThisAsTree(BufferMinHeap *buff, int parentNodePos)
 {
@@ -274,13 +267,14 @@ int main()
     push(buffer, prio11);
     push(buffer, prio12);
 
+    printAsBuffer(buffer);
     printTree(buffer);
 
     pop(buffer);
     pop(buffer);
-
-    //BinHeap *prio13 = createNode(1, 4);    
-    //push(buffer, prio13);
+    pop(buffer);
+    BinHeap *prio13 = createNode(1, 4);    
+    push(buffer, prio13);
     printAsBuffer(buffer);
     printTree(buffer);
     return 0;
