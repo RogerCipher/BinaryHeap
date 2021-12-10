@@ -14,9 +14,18 @@ by: Rogério Chaves (AKA CandyCrayon), 2021
 
 #include "priorityQueues.h"
 
+//simple error throwing function
+void error(const char *msg) 
+{
+    perror(msg);
+    exit(1);
+}
+
 BufferMinHeap *createHeap()
 {
     BufferMinHeap *buffer = (BufferMinHeap *)malloc(sizeof(BufferMinHeap));
+    if(buffer == NULL)
+        error("Error Alocating memory\n");
 
     buffer->indexOfLastFilled = 0; //no elements in the buffer
 
@@ -48,6 +57,8 @@ int swithPositions(BufferMinHeap *buff, int pos1, int pos2)
 
 
     BinHeap *aux = (BinHeap *)malloc(sizeof(BinHeap));
+    if(aux == NULL)
+        error("Error Alocating memory\n");
     aux->prio = buff->data[pos1]->prio;
     aux->timeStamp = buff->data[pos1]->timeStamp;
 
@@ -140,6 +151,8 @@ BinHeap *pop(BufferMinHeap *buff)
 
     //first lets get the thing we want to pop
     BinHeap *popNode = (BinHeap *)malloc(sizeof(BinHeap));
+    if(popNode == NULL)
+        error("Error Alocating memory\n");
 
     popNode->prio = buff->data[1]->prio;
     popNode->timeStamp = buff->data[1]->timeStamp;
@@ -181,6 +194,8 @@ BinHeap *push(BufferMinHeap *buff, BinHeap *info)
 BinHeap *createNode(int priority, int timeStamp)
 {
     BinHeap *new = (BinHeap *)malloc(sizeof(BinHeap));
+    if(new == NULL)
+        error("Error Alocating memory\n");
     new->prio = priority;
     new->timeStamp = timeStamp;
 

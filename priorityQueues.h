@@ -18,6 +18,10 @@ typedef struct st_bufferMinHeap
     int indexOfLastFilled;
 }BufferMinHeap;
 
+/*---common---*/
+void error(const char *msg);
+
+
 /*---low level operations on the heap---*/
 
 int shouldSwitchNodes(BufferMinHeap *buff,int pos1,int pos2);
