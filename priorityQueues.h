@@ -23,7 +23,7 @@ void error(const char *msg);
 
 
 /*---low level operations on the heap---*/
-
+void freeBuffer(BufferMinHeap *buff);
 int shouldSwitchNodes(BufferMinHeap *buff,int pos1,int pos2);
 int swithPositions(BufferMinHeap *buff, int pos1, int pos2);
 void promoteNode(BufferMinHeap *buff, int position);

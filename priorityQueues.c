@@ -249,6 +249,18 @@ void printAsBuffer(BufferMinHeap *buff)
     return;
 }
 
+void freeBuffer(BufferMinHeap *buff)
+{
+    for(int i = 1; i < buff->indexOfLastFilled+1; i++)
+    {
+        free(buff->data[i]);
+        buff->data[i] = NULL;
+    }
+
+    free(buff);
+    buff = NULL;
+
+}
 int main()
 {
     BufferMinHeap *buffer = createHeap();
@@ -292,5 +304,6 @@ int main()
     push(buffer, prio13);
     printAsBuffer(buffer);
     printTree(buffer);
+    freeBuffer(buffer);
     return 0;
 }
